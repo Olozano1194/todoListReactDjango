@@ -13,7 +13,5 @@ class Task(models.Model):
         db_table = 'task'
         ordering = ['-created_at']
 
-
-
     def __str__(self):
         return self.description
