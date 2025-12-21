@@ -1,3 +1,4 @@
 export interface CreateTaskDto {
-    description: string;        
+    description: string;
+    completed?: boolean;        
 };

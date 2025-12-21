@@ -1,7 +1,7 @@
 //estados
-import { useEffect, useState } from "react";
+import { useState } from "react";
 //API
-import { ListTask, DeleteTask, UpdateTask } from "../api/task.api";
+import { DeleteTask, UpdateTask } from "../api/task.api";
 //Enlaces
 import { Link } from "react-router-dom";
 //Mensajes
@@ -11,36 +11,23 @@ import type { TaskModel } from "../models/task.model";
 //Icons
 import { RiDeleteBinLine, RiPencilLine } from "react-icons/ri";
 
+interface ListTasksProps {
+    tasks: TaskModel[];
+    isLoading: boolean;
+    onTasksChange: (tasks: TaskModel[]) => void;
+}
 
-const ListTasks = () => {
-    const [tasks, setTasks] = useState<TaskModel[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+const ListTasks = ({ tasks, isLoading, onTasksChange }: ListTasksProps) => {
+    const [_, setDeletingId] = useState<number | null>(null);
 
-
-    useEffect(() => {
-        const fetchTaskData = async () => {
-            setIsLoading(true);
-            try {
-                const response = await ListTask();
-                //console.log('Api Response:', response);                
-
-                setTasks(response);
-            }catch (error) {
-                const errorMessage = error instanceof Error ? error.message : 'Error al cargar los datos';
-                toast.error(errorMessage);
-            }finally {
-                setIsLoading(false);
-            }
-        };
-        fetchTaskData();        
-    }, []);
 
     //Función para el manejo de la eliminación
     const handleDelete = async (id: number) => {
         if (window.confirm('¿Estás seguro de eliminar esta tarea?')){
+            setDeletingId(id);
             try {
                 await DeleteTask(id);
-                setTasks(prevTask => prevTask.filter(task => task.id !== id));
+                onTasksChange(tasks.filter(task => task.id !== id));
                 toast.success('Tarea Eliminada', {
                     duration: 3000,
                     position: 'bottom-right',
@@ -54,6 +41,8 @@ const ListTasks = () => {
             } catch (error) {
                    const errorMessage = error instanceof Error ? error.message : 'Error al eliminar la tarea';
                     toast.error(errorMessage);                                    
+            } finally {
+                setDeletingId(null);
             }
         }
     };
@@ -67,23 +56,29 @@ const ListTasks = () => {
             await UpdateTask(task.id, updatedTask);
 
             //Actualizamos el estado local
-            setTasks(prevTasks => prevTasks.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t )
-        );
+            onTasksChange(
+                tasks.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t )
+            );
             
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Error al actualizar la tarea';
             toast.error(errorMessage);            
         }
     };
+    const pendingTasks = tasks.filter(task => !task.completed).length;
 
     return (
         <main className="w-full grid grid-cols-1 auto-rows-auto max-h-[400px] overflow-y-auto p-2 text-lg md:text-xl xl:text-2xl">
-            <div className="mb-4.5">
-                <p>
-                    Te quedan <span className="font-bold text-xl text-green-500 md:text-2xl">{tasks.filter(task => !task.completed).length}</span> tareas por hacer
-                </p>
-            </div>
-            {
+            {/* Contador de tareas pendientes */}
+            {tasks.length > 0 && (
+                <div className="mb-4.5 pb-4 border-b border-gray-300">
+                    <p>
+                        Te quedan <span className="font-bold text-xl text-green-500 md:text-2xl">{pendingTasks}</span> tareas por hacer
+                    </p>
+                </div>
+            )}
+            {/* Lista de tareas */}
+            { 
                 Array.isArray(tasks) && tasks.map((task) => (
                     <form key={task.id} className="w-full flex justify-between">                
                         <label 
@@ -116,7 +111,8 @@ const ListTasks = () => {
                     </form> 
                 ))
             }
-            {isLoading && <div className="text-center py-4">Buscando...</div> }
+            {/* Estados de carga/vacío */}
+            {isLoading && <div className="text-center py-4"><div className="animate-spin inline-block">⏳</div>Buscando tarea...</div> }
 
             { !isLoading && tasks.length === 0 && (
                 <div className="text-center py-4 text-gray-500">No hay tareas disponibles</div>
@@ -124,5 +120,4 @@ const ListTasks = () => {
         </main>        
     );
 };
-
 export default ListTasks;

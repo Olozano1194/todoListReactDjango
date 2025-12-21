@@ -33,10 +33,21 @@ export const CreateTask = async (task: CreateTaskDto ) => {
     }
 }
 
-export const ListTask = async (): Promise<TaskModel[]> => {
+export const ListTask = async (search: string = '', completed?:  boolean): Promise<TaskModel[]> => {
     try {
-        const response = await taskApi.get<TaskModel[]>('/Task/');
-        //console.log('Api response structure:', response.data);
+        const params:  { search?:  string; completed?: boolean } = {};
+        
+        // Solo agregar parámetros si tienen valor
+        if (search. trim()) {
+            params.search = search;
+        }
+        if (completed !== undefined) {
+            params.completed = completed;
+        }
+
+        const response = await taskApi.get<TaskModel[]>('/Task/', {
+            params:  params.search ? params : undefined
+        });
         
         return response.data;
         
