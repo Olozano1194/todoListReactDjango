@@ -18,7 +18,7 @@ interface ListTasksProps {
 }
 
 const ListTasks = ({ tasks, isLoading, onTasksChange }: ListTasksProps) => {
-    const [_, setDeletingId] = useState<number | null>(null);
+    const [, setDeletingId] = useState<number | null>(null);
 
 
     //Función para el manejo de la eliminación
@@ -71,7 +71,7 @@ const ListTasks = ({ tasks, isLoading, onTasksChange }: ListTasksProps) => {
         <main className="w-full grid grid-cols-1 auto-rows-auto max-h-[400px] overflow-y-auto p-2 text-lg md:text-xl xl:text-2xl">
             {/* Contador de tareas pendientes */}
             {tasks.length > 0 && (
-                <div className="mb-4.5 pb-4 border-b border-gray-300">
+                <div className="mb-4.5 pb-4 border-b border-gray-300 md:mt-6">
                     <p>
                         Te quedan <span className="font-bold text-xl text-green-500 md:text-2xl">{pendingTasks}</span> tareas por hacer
                     </p>

@@ -48,7 +48,7 @@ const CreateTasks = ({ onSearch, onTaskCreated, taskExistsExactly }: CreateTasks
         // Si estamos en modo edición, no buscar
         if (params. id) {
             setIsSearchMode(false);
-            setShowCreateButton(false);
+            setShowCreateButton(true);
             setIsDuplicate(false);
             return;
         }
@@ -104,7 +104,7 @@ const CreateTasks = ({ onSearch, onTaskCreated, taskExistsExactly }: CreateTasks
             if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef. current);
             if (duplicateCheckTimeoutRef.current) clearTimeout(duplicateCheckTimeoutRef.current);
         };
-    }, [descriptionValue, params.id]); // ← SIN taskExistsExactly ni onSearch
+    }, [descriptionValue, params.id]); 
 
     const onSubmit = handleSubmit(async (data:  TaskModel) => {
         // Si es un duplicado exacto y estamos creando (no editando), bloquear
@@ -191,14 +191,15 @@ const CreateTasks = ({ onSearch, onTaskCreated, taskExistsExactly }: CreateTasks
         <main className="w-full flex flex-col p-2">
             <div className="w-full flex justify-center pb-10">
                 <h1 className="flex items-center text-center text-2xl md:text-4xl">
-                    <img className='w-9 h-7 rounded-lg mr-3' src={Logo} alt="Logo" />
+                    <img className='w-9 h-9 rounded-lg mr-3' src={Logo} alt="Logo" />
                     ToDo <span className="text-green-400">List</span>
                 </h1>
             </div>
 
             <form
                 onSubmit={onSubmit}
-                className="w-full flex flex-col gap-6 md:flex-row md:items-center md:pb-8 relative">
+                className="w-full flex flex-col gap-6 md:flex-row md:items-center md:pb-4 relative"
+            >
                 <label htmlFor="description" className="w-full relative">
                     <input
                         type="text"
@@ -209,18 +210,21 @@ const CreateTasks = ({ onSearch, onTaskCreated, taskExistsExactly }: CreateTasks
                         }`}
                         placeholder={params.id ? 'editar tarea' : 'Buscar o agregar tarea'}
                         {... register('description', {
-                            required: params.id ? true : false,
+                            required: {
+                                value: params.id ? true : false,
+                                message: 'La tarea es requerida'
+                            },
                             minLength: {
-                                value: params.id ? 3 : 1,
-                                message: 'La tarea debe tener como mínimo 3 caracteres'
+                                value: 3,
+                                message: '⚠️ La tarea debe tener como mínimo 3 caracteres'
                             },
                             maxLength: {
                                 value: 50,
-                                message: 'La tarea debe tener como máximo 50 caracteres'
+                                message: '⚠️ La tarea debe tener como máximo 50 caracteres'
                             },
                             pattern: {
                                 value: /^[a-zA-Z\s]+$/,
-                                message: 'Tarea inválida'
+                                message: '⚠️ Tarea inválida'
                             },
                         })}
                     />
@@ -237,12 +241,7 @@ const CreateTasks = ({ onSearch, onTaskCreated, taskExistsExactly }: CreateTasks
                                 <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">
                                     Nueva tarea
                                 </span>
-                            )}
-                            {isDuplicate && (
-                                <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded font-semibold">
-                                    ⚠️ Ya existe
-                                </span>
-                            )}
+                            )}                            
                         </div>
                     )}
 
@@ -253,13 +252,13 @@ const CreateTasks = ({ onSearch, onTaskCreated, taskExistsExactly }: CreateTasks
                 </label>
 
                 {errors.description && (
-                    <span className='text-red-500 text-sm'>{errors. description.message}</span>
+                    <span className='text-red-500 text-sm font-semibold md:absolute md:top-full md:left-0'>{errors.description.message}</span>
                 )}
 
-                {isDuplicate && descriptionValue.length > 0 && ! params.id && (
-                    <span className='text-red-600 text-sm font-semibold'>
+                {isDuplicate && descriptionValue.length > 0 && ! params.id && (                  
+                    <span className='text-red-600 text-sm font-semibold md:absolute md:top-full md:left-0'>
                         ⚠️ Esta tarea ya existe. No se pueden crear duplicados.
-                    </span>
+                    </span>                    
                 )}
 
                 {showCreateButton && (
